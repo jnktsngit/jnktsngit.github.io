@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Generator</title>
+    <title>QR Code Generator - Location</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-    <h1>QR Code with Date and Time</h1>
+    <h1>QR Code with Location Coordinates</h1>
     <div id="qrcode"></div>
     <button onclick="generateQRCode()">Generate QR Code</button>
 
     <script>
         function generateQRCode() {
-            var now = new Date();
-            var dateTimeString = now.toLocaleString();
+            var latitude = 37.7749;  // Example latitude (San Francisco)
+            var longitude = -122.4194; // Example longitude
+            var geoLocation = "geo:" + latitude + "," + longitude;
 
             // Clear any existing QR code
             document.getElementById("qrcode").innerHTML = "";
 
-            // Generate the new QR code
+            // Generate the new QR code with the location coordinates
             var qrcode = new QRCode(document.getElementById("qrcode"), {
-                text: dateTimeString,
+                text: geoLocation,
                 width: 128,
                 height: 128
             });
@@ -29,3 +30,4 @@
     </script>
 </body>
 </html>
+
