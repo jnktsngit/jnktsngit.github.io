@@ -1,148 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barcode Scanner</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            text-align: center;
-        }
-        video {
-            width: 100%;
-            max-width: 400px;
-            height: auto;
-            border: 2px solid #333;
-            border-radius: 10px;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        li {
-            margin: 10px 0;
-            padding: 10px;
-            background-color: #f0f0f0;
-            border-radius: 5px;
-        }
-        #status {
-            margin-top: 20px;
-            font-size: 1.2em;
-            color: green;
-        }
-    </style>
+    <title>QR Code Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-    <h1>Scan a Barcode v2</h1>
-    <!-- Video element to display the camera feed -->
-    <video id="camera" autoplay playsinline></video>
-    <p id="status">Initializing scanner...</p>
-    <ul id="project-list"></ul>
+    <h1>QR Code with Date and Time</h1>
+    <div id="qrcode"></div>
+    <button onclick="generateQRCode()">Generate QR Code</button>
 
-    <!-- Include QuaggaJS library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script>
-        let projectList = [];
+        function generateQRCode() {
+            var now = new Date();
+            var dateTimeString = now.toLocaleString();
 
-        function addProjectToList(project) {
-            projectList.push(project);
-            updateListDisplay();
-        }
+            // Clear any existing QR code
+            document.getElementById("qrcode").innerHTML = "";
 
-        function updateListDisplay() {
-            const listElement = document.getElementById('project-list');
-            listElement.innerHTML = '';
-            projectList.forEach((item, index) => {
-                const li = document.createElement('li');
-                li.textContent = `${index + 1}. ${item}`;
-                listElement.appendChild(li);
-            });
-            // Store list in localStorage
-            localStorage.setItem('projectList', JSON.stringify(projectList));
-        }
-
-        function loadListFromStorage() {
-            const storedList = localStorage.getItem('projectList');
-            if (storedList) {
-                projectList = JSON.parse(storedList);
-                updateListDisplay();
-            }
-        }
-
-        // Function to access the camera and show the live feed
-        function startCamera() {
-            const videoElement = document.getElementById('camera');
-
-            // Request access to the camera
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-                .then((stream) => {
-                    videoElement.srcObject = stream;
-                    document.getElementById('status').textContent = 'Camera feed active. Scanning for barcodes...';
-                })
-                .catch((err) => {
-                    document.getElementById('status').textContent = 'Error accessing camera';
-                    console.error("Camera access denied:", err);
-                });
-        }
-
-        // Initialize Quagga for barcode scanning
-        function startScanner() {
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector('#camera'), // Use the video element for the feed
-                    constraints: {
-                        facingMode: "environment" // Use the rear camera
-                    }
-                },
-                decoder: {
-                    readers: [
-                        "code_128_reader", 
-                        "ean_reader", 
-                        "ean_8_reader",
-                        "upc_reader", 
-                        "code_39_reader", 
-                        "code_93_reader"
-                    ] // Added more barcode types
-                },
-                locate: true, // Enable locating barcodes
-                halfSample: true // Increases performance on mobile
-            }, function (err) {
-                if (err) {
-                    console.log(err);
-                    document.getElementById('status').textContent = 'Scanner initialization failed';
-                    return;
-                }
-                document.getElementById('status').textContent = 'Scanner ready. Scanning for barcodes...';
-                Quagga.start();
-            });
-
-            Quagga.onProcessed(function (result) {
-                if (result && result.boxes) {
-                    const canvas = Quagga.canvas.dom.overlay;
-                    Quagga.ImageDebug.drawPath(result.boxes.filter(function (box) {
-                        return box !== null;
-                    }).map(function (box) {
-                        return box;
-                    }), { x: 0, y: 1 }, canvas, { color: 'green', lineWidth: 2 });
-                }
-            });
-
-            Quagga.onDetected(function (result) {
-                const code = result.codeResult.code;
-                document.getElementById('status').textContent = `Barcode detected: ${code}`;
-                addProjectToList(code);
+            // Generate the new QR code
+            var qrcode = new QRCode(document.getElementById("qrcode"), {
+                text: dateTimeString,
+                width: 128,
+                height: 128
             });
         }
-
-        // Start the camera feed and barcode scanner
-        window.onload = function () {
-            loadListFromStorage();
-            startCamera();
-            startScanner();
-        };
     </script>
 </body>
 </html>
