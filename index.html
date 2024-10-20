@@ -34,7 +34,7 @@
     </style>
 </head>
 <body>
-    <h1>Scan a Barcode</h1>
+    <h1>Scan a Barcode v2</h1>
     <!-- Video element to display the camera feed -->
     <video id="camera" autoplay playsinline></video>
     <p id="status">Initializing scanner...</p>
@@ -98,8 +98,17 @@
                     }
                 },
                 decoder: {
-                    readers: ["code_128_reader", "ean_reader", "ean_8_reader"] // Adjust for more barcode types
-                }
+                    readers: [
+                        "code_128_reader", 
+                        "ean_reader", 
+                        "ean_8_reader",
+                        "upc_reader", 
+                        "code_39_reader", 
+                        "code_93_reader"
+                    ] // Added more barcode types
+                },
+                locate: true, // Enable locating barcodes
+                halfSample: true // Increases performance on mobile
             }, function (err) {
                 if (err) {
                     console.log(err);
@@ -111,11 +120,13 @@
             });
 
             Quagga.onProcessed(function (result) {
-                if (result) {
-                    if (result.boxes) {
-                        const canvas = Quagga.canvas.dom.overlay;
-                        Quagga.ImageDebug.drawPath(result.boxes[0], { x: 0, y: 1 }, canvas, { color: 'green', lineWidth: 2 });
-                    }
+                if (result && result.boxes) {
+                    const canvas = Quagga.canvas.dom.overlay;
+                    Quagga.ImageDebug.drawPath(result.boxes.filter(function (box) {
+                        return box !== null;
+                    }).map(function (box) {
+                        return box;
+                    }), { x: 0, y: 1 }, canvas, { color: 'green', lineWidth: 2 });
                 }
             });
 
