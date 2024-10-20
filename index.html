@@ -31,7 +31,7 @@
 <body>
     <h1>Scan a Barcode</h1>
     <!-- Video element to display the camera feed -->
-    <video id="scanner" autoplay playsinline></video>
+    <video id="camera" autoplay playsinline></video>
     <ul id="project-list"></ul>
 
     <!-- Include QuaggaJS library -->
@@ -64,36 +64,54 @@
             }
         }
 
+        // Function to access the camera and show the live feed
+        function startCamera() {
+            const videoElement = document.getElementById('camera');
+
+            // Request access to the camera
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then((stream) => {
+                    videoElement.srcObject = stream;
+                })
+                .catch((err) => {
+                    console.error("Camera access denied:", err);
+                });
+        }
+
         // Initialize Quagga for barcode scanning
-        Quagga.init({
-            inputStream: {
-                name: "Live",
-                type: "LiveStream",
-                target: document.querySelector('#scanner'), // Video element to show the camera feed
-                constraints: {
-                    width: 640,
-                    height: 480,
-                    facingMode: "environment" // Use the rear camera on mobile devices
+        function startScanner() {
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector('#camera'), // Use the video element for the feed
+                    constraints: {
+                        facingMode: "environment" // Use the rear camera
+                    }
+                },
+                decoder: {
+                    readers: ["code_128_reader"] // Adjust for other barcode types if necessary
                 }
-            },
-            decoder: {
-                readers: ["code_128_reader"] // Adjust for other barcode types if necessary
-            }
-        }, function (err) {
-            if (err) {
-                console.log(err);
-                return;
-            }
-            Quagga.start();
-        });
+            }, function (err) {
+                if (err) {
+                    console.log(err);
+                    return;
+                }
+                Quagga.start();
+            });
 
-        Quagga.onDetected(function (result) {
-            const code = result.codeResult.code;
-            addProjectToList(code);
-        });
+            Quagga.onDetected(function (result) {
+                const code = result.codeResult.code;
+                addProjectToList(code);
+            });
+        }
 
-        // Load existing list from localStorage
-        loadListFromStorage();
+        // Start the camera feed and barcode scanner
+        window.onload = function () {
+            loadListFromStorage();
+            startCamera();
+            startScanner();
+        };
     </script>
 </body>
 </html>
