@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+        }
+        video {
+            width: 100%;
+            max-width: 400px;
+            height: auto;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Scan a Barcode</h1>
+    <video id="scanner" autoplay></video>
+    <ul id="project-list"></ul>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <script>
+        let projectList = [];
+
+        function addProjectToList(project) {
+            projectList.push(project);
+            updateListDisplay();
+        }
+
+        function updateListDisplay() {
+            const listElement = document.getElementById('project-list');
+            listElement.innerHTML = '';
+            projectList.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.textContent = `${index + 1}. ${item}`;
+                listElement.appendChild(li);
+            });
+            // Store list in localStorage
+            localStorage.setItem('projectList', JSON.stringify(projectList));
+        }
+
+        function loadListFromStorage() {
+            const storedList = localStorage.getItem('projectList');
+            if (storedList) {
+                projectList = JSON.parse(storedList);
+                updateListDisplay();
+            }
+        }
+
+        // Initialize Quagga for barcode scanning
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#scanner')    // Or '#yourElement' (optional)
+            },
+            decoder: {
+                readers: ["code_128_reader"] // Adjust for other barcode types if necessary
+            }
+        }, function (err) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            Quagga.start();
+        });
+
+        Quagga.onDetected(function (result) {
+            const code = result.codeResult.code;
+            addProjectToList(code);
+        });
+
+        // Load existing list from localStorage
+        loadListFromStorage();
+    </script>
+</body>
+</html>
