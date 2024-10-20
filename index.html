@@ -13,6 +13,8 @@
             width: 100%;
             max-width: 400px;
             height: auto;
+            border: 2px solid #333;
+            border-radius: 10px;
         }
         ul {
             list-style-type: none;
@@ -28,8 +30,11 @@
 </head>
 <body>
     <h1>Scan a Barcode</h1>
-    <video id="scanner" autoplay></video>
+    <!-- Video element to display the camera feed -->
+    <video id="scanner" autoplay playsinline></video>
     <ul id="project-list"></ul>
+
+    <!-- Include QuaggaJS library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script>
         let projectList = [];
@@ -64,7 +69,12 @@
             inputStream: {
                 name: "Live",
                 type: "LiveStream",
-                target: document.querySelector('#scanner')    // Or '#yourElement' (optional)
+                target: document.querySelector('#scanner'), // Video element to show the camera feed
+                constraints: {
+                    width: 640,
+                    height: 480,
+                    facingMode: "environment" // Use the rear camera on mobile devices
+                }
             },
             decoder: {
                 readers: ["code_128_reader"] // Adjust for other barcode types if necessary
