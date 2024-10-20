@@ -3,27 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code for iPhone Reminder</title>
+    <title>QR Code for Reminder with Clipboard</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-    <h1>QR Code for iPhone Reminder</h1>
+    <h1>QR Code for Reminder with Clipboard</h1>
     <div id="qrcode"></div>
     <button onclick="generateQRCode()">Generate QR Code</button>
 
     <script>
         function generateQRCode() {
+            var reminderMessage = "This is the reminder message copied to your clipboard.";
             var shortcutURL = "shortcuts://run-shortcut?name=QRreminder"; // Replace with your shortcut URL
 
-            // Clear any existing QR code
-            document.getElementById("qrcode").innerHTML = "";
+            // Copy the message to the clipboard
+            copyToClipboard(reminderMessage);
 
-            // Generate the QR code for the shortcut URL
+            // Generate the QR code that opens the shortcut
+            document.getElementById("qrcode").innerHTML = "";
             var qrcode = new QRCode(document.getElementById("qrcode"), {
                 text: shortcutURL,
                 width: 128,
                 height: 128
             });
+
+            alert("Message copied to clipboard! You can now scan the QR code to open the shortcut.");
+        }
+
+        // Function to copy text to clipboard
+        function copyToClipboard(text) {
+            var textarea = document.createElement("textarea");
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
         }
     </script>
 </body>
