@@ -26,12 +26,18 @@
             background-color: #f0f0f0;
             border-radius: 5px;
         }
+        #status {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: green;
+        }
     </style>
 </head>
 <body>
     <h1>Scan a Barcode</h1>
     <!-- Video element to display the camera feed -->
     <video id="camera" autoplay playsinline></video>
+    <p id="status">Initializing scanner...</p>
     <ul id="project-list"></ul>
 
     <!-- Include QuaggaJS library -->
@@ -72,8 +78,10 @@
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
                 .then((stream) => {
                     videoElement.srcObject = stream;
+                    document.getElementById('status').textContent = 'Camera feed active. Scanning for barcodes...';
                 })
                 .catch((err) => {
+                    document.getElementById('status').textContent = 'Error accessing camera';
                     console.error("Camera access denied:", err);
                 });
         }
@@ -90,18 +98,30 @@
                     }
                 },
                 decoder: {
-                    readers: ["code_128_reader"] // Adjust for other barcode types if necessary
+                    readers: ["code_128_reader", "ean_reader", "ean_8_reader"] // Adjust for more barcode types
                 }
             }, function (err) {
                 if (err) {
                     console.log(err);
+                    document.getElementById('status').textContent = 'Scanner initialization failed';
                     return;
                 }
+                document.getElementById('status').textContent = 'Scanner ready. Scanning for barcodes...';
                 Quagga.start();
+            });
+
+            Quagga.onProcessed(function (result) {
+                if (result) {
+                    if (result.boxes) {
+                        const canvas = Quagga.canvas.dom.overlay;
+                        Quagga.ImageDebug.drawPath(result.boxes[0], { x: 0, y: 1 }, canvas, { color: 'green', lineWidth: 2 });
+                    }
+                }
             });
 
             Quagga.onDetected(function (result) {
                 const code = result.codeResult.code;
+                document.getElementById('status').textContent = `Barcode detected: ${code}`;
                 addProjectToList(code);
             });
         }
